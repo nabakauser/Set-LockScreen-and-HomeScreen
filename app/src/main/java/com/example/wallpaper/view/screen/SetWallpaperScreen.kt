@@ -1,11 +1,15 @@
 package com.example.wallpaper.view.screen
 
 import android.app.WallpaperManager
+import android.app.WallpaperManager.FLAG_LOCK
+import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,31 +63,69 @@ fun SetWallpaperScreen(
             contentDescription = "",
             contentScale = ContentScale.FillBounds,
         )
-        Button(
+        Row(
             modifier = Modifier
                 .padding(bottom = 56.dp, start = 24.dp, end = 24.dp)
                 .fillMaxWidth(),
-            onClick = {
-                isLoading.value = true
-                coroutineScope.launch {
-                    setWallpaper(context, imageId)
-                    Toast.makeText(context, "Wallpaper Applied Successfully!", Toast.LENGTH_SHORT).show()
-                    isLoading.value = false
-                    navigateBack()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Gray.copy(alpha = .4f),
-                contentColor = Color.DarkGray
-            )
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.padding(4.dp),
-                text = "Set Wallpaper",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Button(
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    isLoading.value = true
+                    coroutineScope.launch {
+                        setWallpaper(
+                            context,
+                            imageId,
+                            true
+                        )
+                        Toast.makeText(context, "Lockscreen Applied Successfully!", Toast.LENGTH_SHORT).show()
+                        isLoading.value = false
+                        navigateBack()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray.copy(alpha = .4f),
+                    contentColor = Color.DarkGray
+                )
+            ) {
+                Text(
+                    modifier = Modifier.padding(4.dp),
+                    text = "Set Lockscreen",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+            Spacer(modifier = Modifier.padding(4.dp))
+            Button(
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    isLoading.value = true
+                    coroutineScope.launch {
+                        setWallpaper(
+                            context,
+                            imageId,
+                            false
+                        )
+                        Toast.makeText(context, "Homescreen Applied Successfully!", Toast.LENGTH_SHORT).show()
+                        isLoading.value = false
+                        navigateBack()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray.copy(alpha = .4f),
+                    contentColor = Color.DarkGray
+                )
+            ) {
+                Text(
+                    modifier = Modifier.padding(4.dp),
+                    text = "Set Homescreen",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
         if (isLoading.value) {
             Box(
@@ -101,10 +143,16 @@ fun SetWallpaperScreen(
 suspend fun setWallpaper(
     context: Context,
     imageId: Int,
+    isLockScreen: Boolean,
 ) {
     withContext(Dispatchers.IO) {
         val bitmap = BitmapFactory.decodeResource(context.resources, imageId)
         val wallpaperManager = WallpaperManager.getInstance(context)
-        wallpaperManager.setBitmap(bitmap)
+        wallpaperManager.setBitmap(
+             bitmap,
+            null,
+            false,
+            if(isLockScreen) FLAG_LOCK else FLAG_SYSTEM
+        )
     }
 }
